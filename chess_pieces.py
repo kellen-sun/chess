@@ -836,14 +836,14 @@ def iscapture(board, move,turn, moves_done):
 
 
 def board_setup(dis):
-    dis.fill((30,30,0))
+    dis.fill((100,50,0))
     for x in range(0,8):
         if x%2!=0:
             for y in range(1,8,2):
                 button = pygame.Rect(60*x, 60*y, 60, 60)
-                pygame.draw.rect(dis, [255, 250, 200], button)
+                pygame.draw.rect(dis, [202, 164, 114], button)
         else:
             for y in range(0,8,2):
                 button = pygame.Rect(60*x, 60*y, 60, 60)
-                pygame.draw.rect(dis, [255, 250, 200], button)
+                pygame.draw.rect(dis, [202, 164, 114], button)
 

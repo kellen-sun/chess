@@ -129,18 +129,18 @@ moves_done = []
 
 images={}
 if graphic:
-    images['B2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_bdl45.jpg')
-    images['B1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_bll45.jpg')
-    images['P2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_pdl45.jpg')
-    images['P1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_pll45.jpg')
-    images['R2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_rdl45.jpg')
-    images['R1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_rll45.jpg')
-    images['N2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_ndl45.jpg')
-    images['N1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_nll45.jpg')
-    images['Q2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_qdl45.jpg')
-    images['Q1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_qll45.jpg')
-    images['K2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kdl45.jpg')
-    images['K1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kll45.jpg')
+    images['B2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_bdl45.png')
+    images['B1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_bll45.png')
+    images['P2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_pdl45.png')
+    images['P1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_pll45.png')
+    images['R2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_rdl45.png')
+    images['R1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_rll45.png')
+    images['N2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_ndl45.png')
+    images['N1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_nll45.png')
+    images['Q2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_qdl45.png')
+    images['Q1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_qll45.png')
+    images['K2'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kdl45.png')
+    images['K1'] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kll45.png')
 
 
     pygame.init()
@@ -170,7 +170,7 @@ while game_not_over:
                 mouse_pos = event.pos
                 q,w = mouse_pos[0]//60, mouse_pos[1]//60
                 move=move+str(7-w)+str(7-q)
-                pygame.draw.circle(dis, (0,0,250), (q*60+25,w*60+25), 20,1)  
+                pygame.draw.circle(dis, (0,0,250), (q*60+30,w*60+30), 30, 4)
                 pygame.display.update()
     else:
         move = input('Your move? ')

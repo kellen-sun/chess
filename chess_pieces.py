@@ -697,8 +697,39 @@ def random_best(position, board, all_moves, moves_done, turn,count,tables1,table
                 c.append(move_evaluation(boardb, position,tables1,tables2))
                 #c.append(quiesce(boardb,'1',all_moves,moves_done,tables1,tables2))
             g[x]=max(c)
-        move=min(g, key=g.get)
-        return move,count
+        if len(g.keys())>3:
+            #if there's more than 3 possible moves, then we pick the 3 best ones
+            toconsider = []
+            m=10**5
+            for key in g.keys():
+                if g[key]<m:
+                    m=g[key]
+                    index = key
+            toconsider.append(index)
+            m=10**5
+            for key in g.keys():
+                if g[key]<m and key!=toconsider[0]:
+                    m=g[key]
+                    index = key
+            toconsider.append(index)
+            m=10**5
+            for key in g.keys():
+                if g[key]<m and key!=toconsider[0] and key!=toconsider[-1]:
+                    m=g[key]
+                    index = key
+            toconsider.append(index)
+            #then tries to add some randomness to its playing
+            #might need to play around with the probability stuff
+            temp=random.uniform(0.0,1.0/g[toconsider[0]]+1.0/g[toconsider[1]]+1.0/g[toconsider[2]])
+            if temp<1.0/g[toconsider[0]]:
+                return toconsider[0],count
+            if temp<1.0/g[toconsider[0]]+1.0/g[toconsider[1]]:
+                return toconsider[1],count
+            else:
+                return toconsider[-1], count
+        else:
+            move = min(g, key=g.get)
+            return move, count
 
     elif depth==3:
         b=possible_moves(board, turn, position, all_moves, moves_done)

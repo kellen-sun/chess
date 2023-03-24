@@ -120,7 +120,7 @@ tables1 = {}
 for r in tables2.keys():
     tables1[r[0]+'1']=numpy.flip(tables2[r],1)
 
-turn = '2'
+turn = '1'
 position = 0
 troll=True
 game_not_over = True
@@ -148,57 +148,126 @@ if graphic:
     dis = pygame.display.set_mode((480, 480))
 else:
     dis=''
-
-print_board(board,dis,images,graphic)
-move=''
-while game_not_over:
-    if troll and endgame(board):
-        troll=False
-        dis.blit(pygame.font.SysFont("comicsansms", 36).render("We're in the endgame now.", True, (250, 0, 0)), [10, 200])
-        pygame.display.update()
-        time.sleep(3)
-        print_board(board,dis,images,graphic)
-    if graphic:
-        if len(move)!=2:
-            move=''
-            dis=print_board(board,dis,images,graphic)
+if turn == "1":
+    print_board(board,dis,images,graphic)
+    move=''
+    while game_not_over:
+        if troll and endgame(board):
+            troll=False
+            dis.blit(pygame.font.SysFont("comicsansms", 36).render("We're in the endgame now.", True, (250, 0, 0)), [10, 200])
             pygame.display.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = event.pos
-                q,w = mouse_pos[0]//60, mouse_pos[1]//60
-                move=move+str(7-w)+str(7-q)
-                pygame.draw.circle(dis, (0,0,250), (q*60+30,w*60+30), 30, 4)
+            time.sleep(3)
+            print_board(board,dis,images,graphic)
+        if graphic:
+            if len(move)!=2:
+                move=''
+                dis=print_board(board,dis,images,graphic)
                 pygame.display.update()
-    else:
-        move = input('Your move? ')
-    position=0
-    if len(move)==4:
-        print(move)
-        if move in possible_moves(board, '1', position, all_moves, moves_done):
-            moves_done.append(move)
-            change_board(board, move, '1', moves_done)
-            promotion(board, '1')
-            dis=print_board(board,dis,images,graphic)
-            if graphic:
-                pygame.display.update()
-            all_moves=[]
-            count=0
-            t=time.time()
-            move,count=random_best(position, board, all_moves, moves_done, turn,count,tables1,tables2,2)
-            #move,count=selectmove(2,board,turn,position,all_moves, moves_done, count,tables1,tables2)
-            print('')
-            print('Computer analyzed '+str(count)+' moves in '+str(round(time.time()-t,4))+' seconds.')
-            print(move)
-            print('')
-            moves_done.append(move)
-            board=change_board(board, move, '2',moves_done)
-            promotion(board, '2')
-            dis=print_board(board,dis,images,graphic)
-            if graphic:
-                pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    q,w = mouse_pos[0]//60, mouse_pos[1]//60
+                    move=move+str(7-w)+str(7-q)
+                    pygame.draw.circle(dis, (0,0,250), (q*60+30,w*60+30), 30, 4)
+                    pygame.display.update()
         else:
-            print('illegal move')
-    all_moves = []
+            move = input('Your move? ')
+        position=0
+        if len(move)==4:
+            print(move)
+            if move in possible_moves(board, '1', position, all_moves, moves_done):
+                moves_done.append(move)
+                change_board(board, move, '1', moves_done)
+                promotion(board, '1')
+                dis=print_board(board,dis,images,graphic)
+                if graphic:
+                    pygame.display.update()
+                all_moves=[]
+                count=0
+                t=time.time()
+                move,count=random_best(position, board, all_moves, moves_done, turn,count,tables1,tables2,2)
+                #move,count=selectmove(2,board,turn,position,all_moves, moves_done, count,tables1,tables2)
+                print('')
+                print('Computer analyzed '+str(count)+' moves in '+str(round(time.time()-t,4))+' seconds.')
+                print(move)
+                print('')
+                moves_done.append(move)
+                board=change_board(board, move, '2',moves_done)
+                promotion(board, '2')
+                dis=print_board(board,dis,images,graphic)
+                if graphic:
+                    pygame.display.update()
+            else:
+                print('illegal move')
+        all_moves = []
+else:
+    print_board(board,dis,images,graphic)
+    move=''
+    all_moves=[]
+    count=0
+    t=time.time()
+    move,count=random_best(position, board, all_moves, moves_done, turn,count,tables1,tables2,2)
+    #move,count=selectmove(2,board,turn,position,all_moves, moves_done, count,tables1,tables2)
+    print('')
+    print('Computer analyzed '+str(count)+' moves in '+str(round(time.time()-t,4))+' seconds.')
+    print(move)
+    print('')
+    moves_done.append(move)
+    board=change_board(board, move, '1',moves_done)
+    promotion(board, '1')
+    dis=print_board(board,dis,images,graphic)
+    if graphic:
+        pygame.display.update()
+    while game_not_over:
+        if troll and endgame(board):
+            troll=False
+            dis.blit(pygame.font.SysFont("comicsansms", 36).render("We're in the endgame now.", True, (250, 0, 0)), [10, 200])
+            pygame.display.update()
+            time.sleep(3)
+            print_board(board,dis,images,graphic)
+        if graphic:
+            if len(move)!=2:
+                move=''
+                dis=print_board(board,dis,images,graphic)
+                pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    q,w = mouse_pos[0]//60, mouse_pos[1]//60
+                    move=move+str(7-w)+str(7-q)
+                    pygame.draw.circle(dis, (0,0,250), (q*60+30,w*60+30), 30, 4)
+                    pygame.display.update()
+        else:
+            move = input('Your move? ')
+        position=0
+        if len(move)==4:
+            print(move)
+            if move in possible_moves(board, '2', position, all_moves, moves_done):
+                moves_done.append(move)
+                change_board(board, move, '2', moves_done)
+                promotion(board, '2')
+                dis=print_board(board,dis,images,graphic)
+                if graphic:
+                    pygame.display.update()
+                all_moves=[]
+                count=0
+                t=time.time()
+                move,count=random_best(position, board, all_moves, moves_done, turn,count,tables1,tables2,2)
+                #move,count=selectmove(2,board,turn,position,all_moves, moves_done, count,tables1,tables2)
+                print('')
+                print('Computer analyzed '+str(count)+' moves in '+str(round(time.time()-t,4))+' seconds.')
+                print(move)
+                print('')
+                moves_done.append(move)
+                board=change_board(board, move, '1',moves_done)
+                promotion(board, '1')
+                dis=print_board(board,dis,images,graphic)
+                if graphic:
+                    pygame.display.update()
+            else:
+                print('illegal move')
+        all_moves = []

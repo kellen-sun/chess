@@ -681,55 +681,93 @@ def print_board(board,dis,images,graphic):
 
 
 def random_best(position, board, all_moves, moves_done, turn,count,tables1,tables2,depth):
-    if depth==2:    
-        b=possible_moves(board, '2', position, all_moves, moves_done)
+    if depth==2:
+        if turn=='2':
+            opponent='1'
+        else:
+            opponent='2'
+        b=possible_moves(board, opponent, position, all_moves, moves_done)
         g={}
         for x in b:
             boarda = copy.deepcopy(board)
-            boarda = change_board(boarda, x, '2',moves_done)
+            boarda = change_board(boarda, x, opponent, moves_done)
             all_moves=[]
-            a = possible_moves(boarda, '1', position, all_moves, moves_done)
+            a = possible_moves(boarda, turn, position, all_moves, moves_done)
             c=[]
             for y in a:
                 boardb = copy.deepcopy(boarda)
-                boardb = change_board(boardb, y, '1',moves_done)
+                boardb = change_board(boardb, y, turn, moves_done)
                 count+=1
                 c.append(move_evaluation(boardb, position,tables1,tables2))
                 #c.append(quiesce(boardb,'1',all_moves,moves_done,tables1,tables2))
             g[x]=max(c)
-        if len(g.keys())>3:
+        if turn == "1":
+            if len(g.keys())>3:
             #if there's more than 3 possible moves, then we pick the 3 best ones
-            toconsider = []
-            m=10**5
-            for key in g.keys():
-                if g[key]<m:
-                    m=g[key]
-                    index = key
-            toconsider.append(index)
-            m=10**5
-            for key in g.keys():
-                if g[key]<m and key!=toconsider[0]:
-                    m=g[key]
-                    index = key
-            toconsider.append(index)
-            m=10**5
-            for key in g.keys():
-                if g[key]<m and key!=toconsider[0] and key!=toconsider[-1]:
-                    m=g[key]
-                    index = key
-            toconsider.append(index)
-            #then tries to add some randomness to its playing
-            #might need to play around with the probability stuff
-            temp=random.uniform(0.0,1.0/g[toconsider[0]]+1.0/g[toconsider[1]]+1.0/g[toconsider[2]])
-            if temp<1.0/g[toconsider[0]]:
-                return toconsider[0],count
-            if temp<1.0/g[toconsider[0]]+1.0/g[toconsider[1]]:
-                return toconsider[1],count
+                toconsider = []
+                m=10**5
+                for key in g.keys():
+                    if g[key]<m:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                m=10**5
+                for key in g.keys():
+                    if g[key]<m and key!=toconsider[0]:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                m=10**5
+                for key in g.keys():
+                    if g[key]<m and key!=toconsider[0] and key!=toconsider[-1]:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                #then tries to add some randomness to its playing
+                #might need to play around with the probability stuff
+                temp=random.uniform(0.0,1.0/g[toconsider[0]]+1.0/g[toconsider[1]]+1.0/g[toconsider[2]])
+                if temp<1.0/g[toconsider[0]]:
+                    return toconsider[0],count
+                if temp<1.0/g[toconsider[0]]+1.0/g[toconsider[1]]:
+                    return toconsider[1],count
+                else:
+                    return toconsider[-1], count
             else:
-                return toconsider[-1], count
+                move = min(g, key=g.get)
+                return move, count
         else:
-            move = min(g, key=g.get)
-            return move, count
+            if len(g.keys())>3:
+                toconsider = []
+                m=-10**5
+                for key in g.keys():
+                    if g[key]>m:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                m=-10**5
+                for key in g.keys():
+                    if g[key]>m and key!=toconsider[0]:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                m=-10**5
+                for key in g.keys():
+                    if g[key]>m and key!=toconsider[0] and key!=toconsider[-1]:
+                        m=g[key]
+                        index = key
+                toconsider.append(index)
+                #then tries to add some randomness to its playing
+                #might need to play around with the probability stuff
+                temp=random.uniform(0.0,1.0/g[toconsider[0]]+1.0/g[toconsider[1]]+1.0/g[toconsider[2]])
+                if temp<1.0/g[toconsider[0]]:
+                    return toconsider[0],count
+                if temp<1.0/g[toconsider[0]]+1.0/g[toconsider[1]]:
+                    return toconsider[1],count
+                else:
+                    return toconsider[-1], count
+            else:
+                move = max(g, key=g.get)
+                return move, count
 
     elif depth==3:
         b=possible_moves(board, turn, position, all_moves, moves_done)
@@ -743,7 +781,7 @@ def random_best(position, board, all_moves, moves_done, turn,count,tables1,table
             boarda = copy.deepcopy(board)
             boarda = change_board(boarda, x, turn, moves_done)
             all_moves=[]
-            a = possible_moves(boarda, '1', position, all_moves, moves_done)
+            a = possible_moves(boarda, opponent, position, all_moves, moves_done)
             c=[]
             for y in a:
                 boardb = copy.deepcopy(boarda)

@@ -42,19 +42,57 @@ class Board:
         move0 = move//65-1
         self.board[move1]=self.board[move0]
         self.board[move0]=0
+        self.turn = 1-self.turn
 
     def possible_moves(self):
         """Returns the possible moves"""
+        self.pmoves = []
+        for i in range(len(self.board)):
+            piece = self.board[i]
+            #i is the position on the board, piece is which piece it is.
+            if piece>0 and piece//8 == self.turn+1:
+                if piece==Knight+(1+self.turn)*8:
+                    increments = [-17, -15, -10, -6, 6, 10, 15, 17]
+                    for j in increments:
+                        if 0<=j+i<64 and abs(i%8 -(i+j)%8)<=2:
+                            #checks the square the knight is jumping to exists on the board
+                            if self.board[i+j]//8!=self.turn+1:
+                                #checks the landing square is not occupied by a piece of the same color
+                                self.pmoves.append(65*(i+1)+i+j+1)
+                if piece==King+(1+self.turn)*8:
+                    increments = [-9, -8, -7, -1, 1, 7, 8, 9]
+                    for j in increments:
+                        if 0<=j+i<64 and abs(i%8 -(i+j)%8)<=1:
+                            #checks the square the king is jumping to exists on the board
+                            if self.board[i+j]//8!=self.turn+1:
+                                #checks the landing square is not occupied by a piece of the same color
+                                self.pmoves.append(65*(i+1)+i+j+1)
+                if piece==Rook+(1+self.turn)*8 or piece==Queen+(1+self.turn)*8:
+                    increments = [-8, -1, 1, 8]
+                    for j in increments:
+                        for k in range(1, 8):
+                            if 0<=i+k*j<64 and (i//8==(i+k*j)//8 or i%8==(i+k*j)%8):
+                                #hmm how do i make this work?
+                                if self.board[i+k*j]//8 != self.turn+1 and self.board[i+k*j]!=0:
+                                    #if taking piece of opposite color
+                                    self.pmoves.append(65*(i+1)+i+k*j+1)
+                                    break
+                                elif self.board[i+k*j]==0:
+                                    #if empty square
+                                    self.pmoves.append(65*(i+1)+i+k*j+1)
+                                else:
+                                    break
+        return self.pmoves
         
-        pass
 
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], "KQkq", 0, -1, [])
 
 #0 represents white's turn, 1 represents black's turn
-#move variable is more of a where did the user click
 #Capital letter for white's castling
-move = 0
+
+move = 0 #takes the form 65*(first position+1) + second position +1
+#move variable is to track where the user clicked
 
 #PyGame Setup
 pygame.init()
@@ -120,7 +158,9 @@ pygame.display.update()
 while game_not_over:
     if move%65!=0:
         #if there's not a selected square then reset it (make the move then reset)
-        currentboard.move(move)
+        currentboard.possible_moves()
+        if move in currentboard.pmoves:
+            currentboard.move(move)
         move=0
         dis=update_board_graphics(currentboard.board, dis, images)
         pygame.display.update()

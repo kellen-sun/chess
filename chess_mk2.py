@@ -72,7 +72,6 @@ class Board:
                     for j in increments:
                         for k in range(1, 8):
                             if 0<=i+k*j<64 and (i//8==(i+k*j)//8 or i%8==(i+k*j)%8):
-                                #hmm how do i make this work?
                                 if self.board[i+k*j]//8 != self.turn+1 and self.board[i+k*j]!=0:
                                     #if taking piece of opposite color
                                     self.pmoves.append(65*(i+1)+i+k*j+1)
@@ -82,6 +81,22 @@ class Board:
                                     self.pmoves.append(65*(i+1)+i+k*j+1)
                                 else:
                                     break
+                if piece==Bishop+(1+self.turn)*8 or piece==Queen+(1+self.turn)*8:
+                    increments = [-9, -7, 7, 9]
+                    for j in increments:
+                        for k in range(1, 8):
+                            if 0<=i+k*j<64 and ((i+k*j)%8+(i+k*j)//8)%2==(i//8+i%8)%2:
+                                if self.board[i+k*j]//8 != self.turn+1 and self.board[i+k*j]!=0:
+                                    #if taking piece of opposite color
+                                    self.pmoves.append(65*(i+1)+i+k*j+1)
+                                    break
+                                elif self.board[i+k*j]==0:
+                                    #if empty square
+                                    self.pmoves.append(65*(i+1)+i+k*j+1)
+                                else:
+                                    break
+                if piece==Pawn+(1+self.turn)*8:
+                    
         return self.pmoves
         
 

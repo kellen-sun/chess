@@ -42,8 +42,13 @@ class Board:
         move0 = move//65-1
         self.board[move1]=self.board[move0]
         self.board[move0]=0
+        if self.en_passant_target==move1 and self.board[move1]==(self.turn+1)*8+Pawn:
+            self.board[8*(move0//8)+move1%8]=0
+        self.en_passant_target = -1
+        if self.board[move1]==(self.turn+1)*8+Pawn and (move1==move0+16 or move1==move0-16):
+            self.en_passant_target = (move0+move1)//2
         self.turn = 1-self.turn
-
+        
     def possible_moves(self):
         """Returns the possible moves"""
         self.pmoves = []
@@ -96,9 +101,21 @@ class Board:
                                 else:
                                     break
                 if piece==Pawn+(1+self.turn)*8:
-                    
+                    increments = [[-9, -7, -8, -16], [7, 9, 8, 16]]
+                    #capturing pieces
+                    for j in range(2):
+                        if 0<=i+increments[self.turn][j]<64:
+                            if (self.board[i+increments[self.turn][j]]//8!=self.turn+1 and self.board[i+increments[self.turn][j]]!=0) or (self.board[i+increments[self.turn][j]]==0 and i+increments[self.turn][j]==self.en_passant_target):
+                                if abs(i%8-(i+increments[self.turn][j])%8)<=1:
+                                    self.pmoves.append(65*(i+1)+i+increments[self.turn][j]+1)
+                    #moving one square up
+                    if 0<=i+increments[self.turn][2]<64:
+                        if self.board[i+increments[self.turn][2]]==0:
+                            self.pmoves.append(65*(i+1)+i+increments[self.turn][2]+1)
+                            if 0<=i+increments[self.turn][3]<64:
+                                if self.board[i+increments[self.turn][3]]==0:
+                                    self.pmoves.append(65*(i+1)+i+increments[self.turn][3]+1)
         return self.pmoves
-        
 
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], "KQkq", 0, -1, [])

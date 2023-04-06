@@ -56,6 +56,8 @@ class Board:
             self.board[move1-2]=0
         self.board[move1]=self.board[move0]
         self.board[move0]=0
+        if self.board[move1]==Pawn+(1+self.turn)*8 and (move1//8 == 0 or move1//8==7):
+            self.board[move1]=Queen+(1+self.turn)*8
         if self.en_passant_target==move1 and self.board[move1]==(self.turn+1)*8+Pawn:
             self.board[8*(move0//8)+move1%8]=0
         self.en_passant_target = -1

@@ -40,6 +40,20 @@ class Board:
         #write exceptions for castling and en_passant
         move1 = move%65-1
         move0 = move//65-1
+        if (move0==0 or move0==4) and 3 in self.castling:
+            self.castling.remove(3)
+        if (move0==7 or move0==4) and 2 in self.castling:
+            self.castling.remove(2)
+        if (move0==63 or move0==60) and 0 in self.castling:
+            self.castling.remove(0)
+        if (move0==56 or move0==60) and 1 in self.castling:
+            self.castling.remove(1)
+        if self.board[move0]==King+8*(self.turn+1) and move0%8==4 and move1%8==6:
+            self.board[move1-1]=self.board[move1+1]
+            self.board[move1+1]=0
+        if self.board[move0]==King+8*(self.turn+1) and move0%8==4 and move1%8==2:
+            self.board[move1+1]=self.board[move1-2]
+            self.board[move1-2]=0
         self.board[move1]=self.board[move0]
         self.board[move0]=0
         if self.en_passant_target==move1 and self.board[move1]==(self.turn+1)*8+Pawn:
@@ -72,6 +86,17 @@ class Board:
                             if self.board[i+j]//8!=self.turn+1:
                                 #checks the landing square is not occupied by a piece of the same color
                                 self.pmoves.append(65*(i+1)+i+j+1)
+                    #castling but will need to fix castling into and away from checks
+                    for j in self.castling:
+                        if j//2==self.turn:
+                            if j%2==0:
+                                if i+2<64:
+                                    if self.board[i+1]==0 and self.board[i+2]==0:
+                                        self.pmoves.append(65*(i+1)+i+3)
+                            if j%2==1:
+                                if i-3>=0:
+                                    if self.board[i-1]==0 and self.board[i-2]==0 and self.board[i-3]==0:
+                                        self.pmoves.append(65*(i+1)+i-1)
                 if piece==Rook+(1+self.turn)*8 or piece==Queen+(1+self.turn)*8:
                     increments = [-8, -1, 1, 8]
                     for j in increments:
@@ -118,10 +143,10 @@ class Board:
         return self.pmoves
 
 #Starting position
-currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], "KQkq", 0, -1, [])
+currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
 
 #0 represents white's turn, 1 represents black's turn
-#Capital letter for white's castling
+#0 for white king side castle, 1 for white queen, 2 for black king side, 3 for black queen side
 
 move = 0 #takes the form 65*(first position+1) + second position +1
 #move variable is to track where the user clicked

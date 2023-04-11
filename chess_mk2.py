@@ -26,6 +26,10 @@ images[Queen+White] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programm
 images[King+Black] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kdl45.png')
 images[King+White] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kll45.png')
 
+#boardevaluation constants
+with open("boardevaluation.pickle", "rb") as f:
+    boardevaluation = pickle.load(f)
+
 class Board:
     """All information necessary for a board position"""
     def __init__(self, board, castling, turn, en_passant_target, all_moves):
@@ -64,6 +68,7 @@ class Board:
         if self.board[move1]==(self.turn+1)*8+Pawn and (move1==move0+16 or move1==move0-16):
             self.en_passant_target = (move0+move1)//2
         self.turn = 1-self.turn
+        self.all_moves.append(move)
         
     def possible_moves(self):
         """Returns the possible moves"""
@@ -143,7 +148,22 @@ class Board:
                                 if self.board[i+increments[self.turn][3]]==0:
                                     self.pmoves.append(65*(i+1)+i+increments[self.turn][3]+1)
         return self.pmoves
-
+    
+    def evaluateboard(self):
+        """Gives a value for the current board by evaluating the value of pieces and their positions"""
+        eval = 0
+        for i in range(len(self.board)):
+            piece = self.board[i]
+            basevalues = {0:0, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
+                          17:-20000, 18:-100, 19:-320, 20:-330, 21:-500, 22:-900}
+            eval+=basevalues[piece]
+            if piece%8 in boardevaluation.keys():
+                if piece//8-1==0:
+                    eval+=boardevaluation[piece%8][i]
+                else:
+                    eval-=boardevaluation[piece%8][63-i]
+        return eval
+    
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
 

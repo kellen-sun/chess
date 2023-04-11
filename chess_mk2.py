@@ -44,13 +44,13 @@ class Board:
         #write exceptions for castling and en_passant
         move1 = move%65-1
         move0 = move//65-1
-        if (move0==0 or move0==4) and 3 in self.castling:
+        if (move0==0 or move0==4 or move1==0) and 3 in self.castling:
             self.castling.remove(3)
-        if (move0==7 or move0==4) and 2 in self.castling:
+        if (move0==7 or move0==4 or move1==7) and 2 in self.castling:
             self.castling.remove(2)
-        if (move0==63 or move0==60) and 0 in self.castling:
+        if (move0==63 or move0==60 or move1==63) and 0 in self.castling:
             self.castling.remove(0)
-        if (move0==56 or move0==60) and 1 in self.castling:
+        if (move0==56 or move0==60 or move1==56) and 1 in self.castling:
             self.castling.remove(1)
         if self.board[move0]==King+8*(self.turn+1) and move0%8==4 and move1%8==6:
             self.board[move1-1]=self.board[move1+1]
@@ -98,11 +98,11 @@ class Board:
                         if j//2==self.turn:
                             if j%2==0:
                                 if i+2<64:
-                                    if self.board[i+1]==0 and self.board[i+2]==0:
+                                    if self.board[i+1]==0 and self.board[i+2]==0 and self.board[i+3]==(self.turn+1)*8+Rook:
                                         self.pmoves.append(65*(i+1)+i+3)
                             if j%2==1:
                                 if i-3>=0:
-                                    if self.board[i-1]==0 and self.board[i-2]==0 and self.board[i-3]==0:
+                                    if self.board[i-1]==0 and self.board[i-2]==0 and self.board[i-3]==0 and self.board[i-4]==(self.turn+1)*8+Rook:
                                         self.pmoves.append(65*(i+1)+i-1)
                 if piece==Rook+(1+self.turn)*8 or piece==Queen+(1+self.turn)*8:
                     increments = [-8, -1, 1, 8]
@@ -154,9 +154,11 @@ class Board:
         eval = 0
         for i in range(len(self.board)):
             piece = self.board[i]
+            #those are the values of each pieces with the pawn set at 100 points
             basevalues = {0:0, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
                           17:-20000, 18:-100, 19:-320, 20:-330, 21:-500, 22:-900}
             eval+=basevalues[piece]
+            #depending on the location of the piece additional smaller value points are added or subtracted
             if piece%8 in boardevaluation.keys():
                 if piece//8-1==0:
                     eval+=boardevaluation[piece%8][i]

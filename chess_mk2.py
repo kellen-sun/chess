@@ -38,7 +38,18 @@ class Board:
         self.turn = turn
         self.en_passant_target = en_passant_target
         self.all_moves = all_moves
+        self.eg = self.endgame()
 
+    def endgame(self):
+        cc1 = 0
+        cc2 = 0
+        for x in self.board:
+            if x == Rook+White or x==Knight+White or x==Bishop+White:
+                cc1+=1
+            if x == Rook+Black or x==Knight+Black or x==Bishop+Black:
+                cc2+=1
+        return ((Queen+White not in self.board) and (Queen+Black not in self.board)) or (cc1<=1 and cc2<=1)
+    
     def move(self, move):
         """Given a move the board is changed accordingly"""
         #write exceptions for castling and en_passant
@@ -71,7 +82,7 @@ class Board:
         self.all_moves.append(move)
         
     def possible_moves(self):
-        """Returns the possible moves"""
+        """Returns the possible moves (in reality the pseudo legal moves)"""
         self.pmoves = []
         for i in range(len(self.board)):
             piece = self.board[i]
@@ -149,9 +160,27 @@ class Board:
                                     self.pmoves.append(65*(i+1)+i+increments[self.turn][3]+1)
         return self.pmoves
     
+    def legalmoves(self):
+        """Returns truly legal moves checking that a move doesn't lead to capture of the king"""
+        pmoves = self.possible_moves()
+        lmoves = []
+        for i in self.pmoves:
+            test = Board(self.board.copy(), self.castling.copy(), self.turn, self.en_passant_target, self.all_moves.copy())
+            test.move(i)
+            next = test.possible_moves()
+            br = True
+            for j in next:
+                if test.board[j%65-1]%8==King:
+                    br = False
+            if br:
+                lmoves.append(i)
+        return lmoves
+    
     def evaluateboard(self):
         """Gives a value for the current board by evaluating the value of pieces and their positions"""
         eval = 0
+        self.eg = self.endgame()
+        print(self.eg)
         for i in range(len(self.board)):
             piece = self.board[i]
             #those are the values of each pieces with the pawn set at 100 points
@@ -159,13 +188,22 @@ class Board:
                           17:-20000, 18:-100, 19:-320, 20:-330, 21:-500, 22:-900}
             eval+=basevalues[piece]
             #depending on the location of the piece additional smaller value points are added or subtracted
-            if piece%8 in boardevaluation.keys():
+            if not (self.eg and piece%8==King):
+                if piece%8 in boardevaluation.keys():
+                    if piece//8-1==0:
+                        eval+=boardevaluation[piece%8][i]
+                    else:
+                        eval-=boardevaluation[piece%8][63-i]
+            else:
                 if piece//8-1==0:
-                    eval+=boardevaluation[piece%8][i]
+                    eval+=boardevaluation['E2'][i]
                 else:
-                    eval-=boardevaluation[piece%8][63-i]
+                    eval-=boardevaluation['E2'][63-i]
         return eval
     
+    def choosemove(self):
+        pass
+
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
 
@@ -239,8 +277,8 @@ pygame.display.update()
 while game_not_over:
     if move%65!=0:
         #if there's not a selected square then reset it (make the move then reset)
-        currentboard.possible_moves()
-        if move in currentboard.pmoves:
+        currentboard.evaluateboard()
+        if move in currentboard.legalmoves():
             currentboard.move(move)
         move=0
         dis=update_board_graphics(currentboard.board, dis, images)

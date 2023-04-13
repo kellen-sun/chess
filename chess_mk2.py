@@ -1,4 +1,4 @@
-import random, copy, time, sys, pickle, numpy, pygame
+import random, copy, time, sys, pickle, numpy, pygame, cProfile
 
 #Piece identifiers
 noPiece = 0
@@ -25,6 +25,8 @@ images[Queen+Black] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programm
 images[Queen+White] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_qll45.png')
 images[King+Black] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kdl45.png')
 images[King+White] = pygame.image.load(r'C:\Users\sunke\Desktop\Kellen\Programming\python\projects\chess\images\Chess_kll45.png')
+
+totalcount = 0
 
 #boardevaluation constants
 with open("boardevaluation.pickle", "rb") as f:
@@ -178,7 +180,9 @@ class Board:
         pmoves = self.possible_moves()
         lmoves = []
         for i in pmoves:
+            #test = Board(copy.copy(self.board), copy.copy(self.castling), self.turn, self.en_passant_target, copy.copy(self.all_moves))
             test = Board(self.board.copy(), self.castling.copy(), self.turn, self.en_passant_target, self.all_moves.copy())
+            #test = copy.deepcopy(self)
             test.move(i)
             next = test.possible_moves()
             br = True
@@ -187,10 +191,13 @@ class Board:
                     br = False
             if br:
                 lmoves.append(i)
+            #self.undomove(i)
         return lmoves
     
     def evaluateboard(self):
         """Gives a value for the current board by evaluating the value of pieces and their positions"""
+        global totalcount
+        totalcount+=1
         eval = 0
         self.eg = self.endgame()
         for i in range(len(self.board)):
@@ -217,7 +224,7 @@ class Board:
         test = Board(self.board.copy(), self.castling.copy(), 1-self.turn, self.en_passant_target, self.all_moves.copy())
         for i in test.possible_moves():
             move1=i%65-1
-            if self.board[i]==8*(self.turn+1)+King:
+            if self.board[move1]==8*(self.turn+1)+King:
                 return True
         return False
     
@@ -240,15 +247,15 @@ class Board:
         moves = self.legalmoves()
         if len(moves)==0:
             if self.in_check():
-                return 10**8, -1
+                return -10**8, -1
             else:
                 return 0, -1
-        bestEvaluation = 10**8
+        bestEvaluation = -10**8
         for i in moves:
             self.move(i)
             evaluation, temp = self.choosemove2(depth-1)
             evaluation = -evaluation
-            if evaluation<bestEvaluation:
+            if evaluation>bestEvaluation:
                 bestmove = i
                 bestEvaluation=evaluation
             self.undomove(i)
@@ -269,6 +276,7 @@ pygame.init()
 pygame.display.set_caption('Chess')
 dis = pygame.display.set_mode((480, 480))
 game_not_over = True
+
 
 
 def update_board_graphics(board, dis, images):
@@ -352,8 +360,11 @@ while game_not_over:
             move=0
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
-            out1, out2 = currentboard.choosemove2(2)
-            print(out1, out2)
+            totalcount = 0
+            t = time.time()
+            cProfile.run("currentboard.choosemove2(3)")
+            out1, out2 = currentboard.choosemove2(3)
+            print(time.time()-t, "s for", totalcount, "moves evaluated.")
             currentboard.move(out2)
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()

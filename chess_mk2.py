@@ -84,14 +84,14 @@ class Board:
         self.all_moves.append(move)
 
     def undomove(self, move):
-        board, turn, castling, en_passant_target = fen_builder("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        board, turn, castling, en_passant_target = [[21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], 0, [0, 1, 2, 3], -1]
         self.board = board
         self.castling = castling
         self.turn = turn
         self.en_passant_target = en_passant_target
         moves = self.all_moves
         self.all_moves = []
-        self.eg = self.endgame()
+        #self.eg = self.endgame()
         moves.pop(-1)
         for i in moves:
             self.move(i)
@@ -199,7 +199,8 @@ class Board:
         global totalcount
         totalcount+=1
         eval = 0
-        self.eg = self.endgame()
+        if self.eg==False:
+            self.eg = self.endgame()
         for i in range(len(self.board)):
             piece = self.board[i]
             #those are the values of each pieces with the pawn set at 100 points

@@ -81,6 +81,19 @@ class Board:
         self.turn = 1-self.turn
         self.all_moves.append(move)
 
+    def undomove(self, move):
+        board, turn, castling, en_passant_target = fen_builder("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        self.board = board
+        self.castling = castling
+        self.turn = turn
+        self.en_passant_target = en_passant_target
+        moves = self.all_moves
+        self.all_moves = []
+        self.eg = self.endgame()
+        moves.pop(-1)
+        for i in moves:
+            self.move(i)
+    
     def possible_moves(self):
         """Returns the possible moves (in reality the pseudo legal moves)"""
         self.pmoves = []
@@ -164,7 +177,7 @@ class Board:
         """Returns truly legal moves checking that a move doesn't lead to capture of the king"""
         pmoves = self.possible_moves()
         lmoves = []
-        for i in self.pmoves:
+        for i in pmoves:
             test = Board(self.board.copy(), self.castling.copy(), self.turn, self.en_passant_target, self.all_moves.copy())
             test.move(i)
             next = test.possible_moves()
@@ -200,6 +213,14 @@ class Board:
                     eval-=boardevaluation['E2'][63-i]
         return eval
     
+    def in_check(self):
+        test = Board(self.board.copy(), self.castling.copy(), 1-self.turn, self.en_passant_target, self.all_moves.copy())
+        for i in test.possible_moves():
+            move1=i%65-1
+            if self.board[i]==8*(self.turn+1)+King:
+                return True
+        return False
+    
     def choosemove(self):
         moves = self.legalmoves()
         bestevaluation = -10**10
@@ -213,7 +234,27 @@ class Board:
                 bestevaluation = evaluation
         return bestmove
 
-
+    def choosemove2(self, depth):
+        if depth==0:
+            return self.evaluateboard(), -1
+        moves = self.legalmoves()
+        if len(moves)==0:
+            if self.in_check():
+                return 10**8, -1
+            else:
+                return 0, -1
+        bestEvaluation = 10**8
+        for i in moves:
+            self.move(i)
+            evaluation, temp = self.choosemove2(depth-1)
+            evaluation = -evaluation
+            if evaluation<bestEvaluation:
+                bestmove = i
+                bestEvaluation=evaluation
+            self.undomove(i)
+        return bestEvaluation, bestmove
+        
+        
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
 
@@ -265,20 +306,38 @@ def fen_builder(string):
         "P":10
     }
     while True:
-        if strboard[count] == "/":
-            pass
-        elif count==len(strboard):
+        if count==len(strboard):
             break
+        elif strboard[count] == "/":
+            pass
         elif strboard[count].isdigit():
             for i in range(int(strboard[count])):
                 board.append(0)
         else:
             board.append(lookup[strboard[count]])
         count+=1
+    if parts[1]=="w":
+        parts[1]=0
+    else:
+        parts[1]=1
+    castling_allowed = []
+    if "K" in parts[2]:
+        castling_allowed.append(0)
+    if "Q" in parts[2]:
+        castling_allowed.append(1)
+    if "k" in parts[2]:
+        castling_allowed.append(2)
+    if "q" in parts[2]:
+        castling_allowed.append(3)
+    if parts[3]=="-":
+        parts[3]=-1
+    else:
+        parts[3]=ord(parts[3][0])-97+(8-parts[3][1])*8
+    
     #parts[1] is whose turn it is
     #parts[2] is which castling are allowed
     #parts[3] is enpassant target
-    return board, parts[1], parts[2], parts[3]
+    return board, parts[1], castling_allowed, parts[3]
 
 dis = update_board_graphics(currentboard.board, dis, images)
 pygame.display.update()
@@ -293,8 +352,9 @@ while game_not_over:
             move=0
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
-            out1 = currentboard.choosemove()
-            currentboard.move(out1)
+            out1, out2 = currentboard.choosemove2(2)
+            print(out1, out2)
+            currentboard.move(out2)
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
         else:

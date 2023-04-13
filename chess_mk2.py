@@ -80,7 +80,7 @@ class Board:
             self.en_passant_target = (move0+move1)//2
         self.turn = 1-self.turn
         self.all_moves.append(move)
-        
+
     def possible_moves(self):
         """Returns the possible moves (in reality the pseudo legal moves)"""
         self.pmoves = []
@@ -156,7 +156,7 @@ class Board:
                         if self.board[i+increments[self.turn][2]]==0:
                             self.pmoves.append(65*(i+1)+i+increments[self.turn][2]+1)
                             if 0<=i+increments[self.turn][3]<64:
-                                if self.board[i+increments[self.turn][3]]==0:
+                                if self.board[i+increments[self.turn][3]]==0 and i//8==[6, 1][self.turn]:
                                     self.pmoves.append(65*(i+1)+i+increments[self.turn][3]+1)
         return self.pmoves
     
@@ -180,7 +180,6 @@ class Board:
         """Gives a value for the current board by evaluating the value of pieces and their positions"""
         eval = 0
         self.eg = self.endgame()
-        print(self.eg)
         for i in range(len(self.board)):
             piece = self.board[i]
             #those are the values of each pieces with the pawn set at 100 points
@@ -202,7 +201,18 @@ class Board:
         return eval
     
     def choosemove(self):
-        pass
+        moves = self.legalmoves()
+        bestevaluation = -10**10
+        bestmove = -1
+        for i in moves:
+            newBoard = Board(self.board.copy(), self.castling.copy(), self.turn, self.en_passant_target, self.all_moves.copy())
+            newBoard.move(i)
+            evaluation = -newBoard.evaluateboard()
+            if evaluation > bestevaluation:
+                bestmove = i
+                bestevaluation = evaluation
+        return bestmove
+
 
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
@@ -280,9 +290,17 @@ while game_not_over:
         currentboard.evaluateboard()
         if move in currentboard.legalmoves():
             currentboard.move(move)
-        move=0
-        dis=update_board_graphics(currentboard.board, dis, images)
-        pygame.display.update()
+            move=0
+            dis=update_board_graphics(currentboard.board, dis, images)
+            pygame.display.update()
+            out1 = currentboard.choosemove()
+            currentboard.move(out1)
+            dis=update_board_graphics(currentboard.board, dis, images)
+            pygame.display.update()
+        else:
+            move = 0
+            dis=update_board_graphics(currentboard.board, dis, images)
+            pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()

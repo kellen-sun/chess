@@ -261,6 +261,33 @@ class Board:
                 bestEvaluation=evaluation
             self.undomove(i)
         return bestEvaluation, bestmove
+    
+    def choosemove3(self, depth, alpha, beta, ply):
+        global bestmove
+        if depth==0:
+            return self.evaluateboard()
+        moves = self.legalmoves()
+        if len(moves)==0:
+            if self.in_check():
+                return -10**8
+            else:
+                return 0
+        if ply>0:
+            if alpha>=beta:
+                return alpha
+        for i in moves:
+            self.move(i)
+            evaluation = self.choosemove3(depth-1, -beta, -alpha, ply+1)
+            evaluation = -evaluation
+            self.undomove(i)
+            if evaluation>=beta:
+                return beta
+            if evaluation>alpha:
+                #bestmove = i
+                alpha=evaluation
+                if ply==0:
+                    bestmove = i
+        return alpha
         
         
 #Starting position
@@ -363,10 +390,11 @@ while game_not_over:
             pygame.display.update()
             totalcount = 0
             t = time.time()
-            cProfile.run("currentboard.choosemove2(3)")
-            out1, out2 = currentboard.choosemove2(3)
+            bestmove = -1
+            #cProfile.run("currentboard.choosemove3(3, -10**8, -10**8, 0)")
+            out1 = currentboard.choosemove3(4, -10**8, 10**8, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
-            currentboard.move(out2)
+            currentboard.move(bestmove)
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
         else:

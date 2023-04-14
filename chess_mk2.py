@@ -204,7 +204,7 @@ class Board:
         for i in range(len(self.board)):
             piece = self.board[i]
             #those are the values of each pieces with the pawn set at 100 points
-            basevalues = {0:1, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
+            basevalues = {0:0, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
                           17:-20000, 18:-100, 19:-320, 20:-330, 21:-500, 22:-900}
             eval+=basevalues[piece]
             #depending on the location of the piece additional smaller value points are added or subtracted
@@ -220,6 +220,13 @@ class Board:
                 else:
                     eval-=boardevaluation['E2'][63-i]
         return eval
+    
+    def is_capture(self, move):
+        move1 = move%65-1
+        move0 = move//65-1
+        if 2-self.board[move1]%8==1-self.board[move0]%8 and (self.board[move1]%8+self.board[move0]%8)==3:
+            return True
+        return False
     
     def in_check(self):
         test = Board(self.board.copy(), self.castling.copy(), 1-self.turn, self.en_passant_target, self.all_moves.copy())
@@ -262,13 +269,30 @@ class Board:
             self.undomove(i)
         return bestEvaluation, bestmove
     
+    def quiesce(self, alpha, beta):
+        evaluation = self.evaluateboard()
+        if evaluation>=beta:
+            return beta
+        alpha = max(alpha, evaluation)
+        moves = self.legalmoves()
+        for i in moves:
+            if self.is_capture(i):
+                self.move(i)
+                evaluation = -self.quiesce(-beta, -alpha)
+                self.undomove(i)
+                if evaluation>=beta:
+                    return beta
+                if evaluation>alpha:
+                    alpha=evaluation
+        return alpha
+
     def choosemove3(self, depth, alpha, beta, ply):
         global bestmove
         if depth==0:
             if ply%2==1:
-                return self.evaluateboard()
+                return self.quiesce(alpha, beta)
             else:
-                return -self.evaluateboard()
+                return -self.quiesce(alpha, beta)
         moves = self.legalmoves()
         if len(moves)==0:
             if self.in_check():

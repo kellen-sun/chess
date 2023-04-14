@@ -204,7 +204,7 @@ class Board:
         for i in range(len(self.board)):
             piece = self.board[i]
             #those are the values of each pieces with the pawn set at 100 points
-            basevalues = {0:0, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
+            basevalues = {0:1, 9:20000, 10:100, 11:320, 12:330, 13:500, 14:900,
                           17:-20000, 18:-100, 19:-320, 20:-330, 21:-500, 22:-900}
             eval+=basevalues[piece]
             #depending on the location of the piece additional smaller value points are added or subtracted

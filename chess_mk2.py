@@ -265,7 +265,10 @@ class Board:
     def choosemove3(self, depth, alpha, beta, ply):
         global bestmove
         if depth==0:
-            return self.evaluateboard()
+            if ply%2==1:
+                return self.evaluateboard()
+            else:
+                return -self.evaluateboard()
         moves = self.legalmoves()
         if len(moves)==0:
             if self.in_check():
@@ -277,8 +280,8 @@ class Board:
                 return alpha
         for i in moves:
             self.move(i)
-            evaluation = self.choosemove3(depth-1, -beta, -alpha, ply+1)
-            evaluation = -evaluation
+            evaluation = -self.choosemove3(depth-1, -beta, -alpha, ply+1)
+            #evaluation = evaluation
             self.undomove(i)
             if evaluation>=beta:
                 return beta
@@ -392,7 +395,7 @@ while game_not_over:
             t = time.time()
             bestmove = -1
             #cProfile.run("currentboard.choosemove3(3, -10**8, -10**8, 0)")
-            out1 = currentboard.choosemove3(4, -10**8, 10**8, 0)
+            out1 = currentboard.choosemove3(3, -10**8, 10**8, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
             currentboard.move(bestmove)
             dis=update_board_graphics(currentboard.board, dis, images)

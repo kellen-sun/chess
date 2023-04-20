@@ -221,19 +221,68 @@ class Board:
                     eval-=boardevaluation['E2'][63-i]
         return eval
     
+    def PNGformatter(self, move):
+        move1 = move%65-1
+        move0 = move//65-1
+        self.move(move)
+        is_check = self.in_check()
+        self.undomove(move)
+        capture = self.is_capture(move)
+        #castling
+        startingpieces = {1:"K", 2:"", 3:"N", 4:"B", 5:"R", 6:"Q"}
+        startingpiece = startingpieces[self.board[move0]%8]
+        endsquare = chr(move1%8+97)+str(8-move1//8)
+        if capture:
+            finalmove = startingpiece+"x"+endsquare
+        else:
+            finalmove = startingpiece+endsquare
+        if is_check:
+            finalmove+="+"
+        if startingpiece == "" and capture:
+            finalmove = chr(move0%8+97)+finalmove
+            return finalmove
+        elif startingpiece == "R" or startingpiece == "N":
+            possible = self.possible_moves()
+            for i in possible:
+                movei1 = i%65-1
+                movei0 = i//65-1
+                if i != move:
+                    if movei1 == move1 and self.board[movei0] == self.board[move0]:
+                        if movei0//8==move0//8:
+                            finalmove = finalmove[0]+chr(move0%8+97)+finalmove[1:]
+                            break
+                        elif movei0%8==move0%8:
+                            finalmove = finalmove[0]+chr(move0//8+97)+finalmove[1:]
+                            break
+            return finalmove
+        elif startingpiece=="K" and abs(move0-move1)>1:
+            if move0-move1 == 2:
+                return "O-O-O"
+            if move1-move0==2:
+                return "O-O"
+        return finalmove
+    
     def is_capture(self, move):
         move1 = move%65-1
         move0 = move//65-1
-        if 2-self.board[move1]%8==1-self.board[move0]%8 and (self.board[move1]%8+self.board[move0]%8)==3:
+        if (self.board[move1]//8+self.board[move0]//8)==3:
             return True
         return False
     
+    def is_check(self, move):
+        self.move(move)
+        temp = self.in_check()
+        self.undomove(move)
+        return temp
+    
     def in_check(self):
-        test = Board(self.board.copy(), self.castling.copy(), 1-self.turn, self.en_passant_target, self.all_moves.copy())
-        for i in test.possible_moves():
+        self.turn = 1-self.turn
+        for i in self.possible_moves():
             move1=i%65-1
             if self.board[move1]==8*(self.turn+1)+King:
+                self.turn = 1-self.turn
                 return True
+        self.turn = 1-self.turn
         return False
     
     def choosemove(self):
@@ -276,7 +325,7 @@ class Board:
         alpha = max(alpha, evaluation)
         moves = self.legalmoves()
         for i in moves:
-            if self.is_capture(i):
+            if self.is_capture(i) or self.is_check(i):
                 self.move(i)
                 evaluation = -self.quiesce(-beta, -alpha)
                 self.undomove(i)
@@ -411,7 +460,9 @@ while game_not_over:
         #if there's not a selected square then reset it (make the move then reset)
         currentboard.evaluateboard()
         if move in currentboard.legalmoves():
+            #print(currentboard.PNGformatter(move))
             currentboard.move(move)
+            
             move=0
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
@@ -419,9 +470,11 @@ while game_not_over:
             t = time.time()
             bestmove = -1
             #cProfile.run("currentboard.choosemove3(3, -10**8, -10**8, 0)")
-            out1 = currentboard.choosemove3(3, -10**8, 10**8, 0)
+            out1 = currentboard.choosemove3(1, -10**9, 10**9, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
+            #print(currentboard.PNGformatter(bestmove))
             currentboard.move(bestmove)
+            
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
         else:

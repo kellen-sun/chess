@@ -31,6 +31,10 @@ totalcount = 0
 #boardevaluation constants
 with open("boardevaluation.pickle", "rb") as f:
     boardevaluation = pickle.load(f)
+#opening games database
+with open("Games.txt", "r") as f:
+    games = f.readlines()
+games = [games[i].split() for i in range(len(games))]
 
 class Board:
     """All information necessary for a board position"""
@@ -55,6 +59,7 @@ class Board:
     def move(self, move):
         """Given a move the board is changed accordingly"""
         #write exceptions for castling and en_passant
+        global games
         move1 = move%65-1
         move0 = move//65-1
         if (move0==0 or move0==4 or move1==0) and 3 in self.castling:
@@ -82,6 +87,42 @@ class Board:
             self.en_passant_target = (move0+move1)//2
         self.turn = 1-self.turn
         self.all_moves.append(move)
+
+    def move1(self, move):
+        global games
+        newgames = []
+        if len(games)>0:
+            for i in games:
+                if self.PNGformatter(move)==i[len(self.all_moves)]:
+                    newgames.append(i)
+        games = newgames
+        self.all_moves.append(move)
+        move1 = move%65-1
+        move0 = move//65-1
+        if (move0==0 or move0==4 or move1==0) and 3 in self.castling:
+            self.castling.remove(3)
+        if (move0==7 or move0==4 or move1==7) and 2 in self.castling:
+            self.castling.remove(2)
+        if (move0==63 or move0==60 or move1==63) and 0 in self.castling:
+            self.castling.remove(0)
+        if (move0==56 or move0==60 or move1==56) and 1 in self.castling:
+            self.castling.remove(1)
+        if self.board[move0]==King+8*(self.turn+1) and move0%8==4 and move1%8==6:
+            self.board[move1-1]=self.board[move1+1]
+            self.board[move1+1]=0
+        if self.board[move0]==King+8*(self.turn+1) and move0%8==4 and move1%8==2:
+            self.board[move1+1]=self.board[move1-2]
+            self.board[move1-2]=0
+        self.board[move1]=self.board[move0]
+        self.board[move0]=0
+        if self.board[move1]==Pawn+(1+self.turn)*8 and (move1//8 == 0 or move1//8==7):
+            self.board[move1]=Queen+(1+self.turn)*8
+        if self.en_passant_target==move1 and self.board[move1]==(self.turn+1)*8+Pawn:
+            self.board[8*(move0//8)+move1%8]=0
+        self.en_passant_target = -1
+        if self.board[move1]==(self.turn+1)*8+Pawn and (move1==move0+16 or move1==move0-16):
+            self.en_passant_target = (move0+move1)//2
+        self.turn = 1-self.turn
 
     def undomove(self, move):
         board, turn, castling, en_passant_target = [[21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], 0, [0, 1, 2, 3], -1]
@@ -224,9 +265,7 @@ class Board:
     def PNGformatter(self, move):
         move1 = move%65-1
         move0 = move//65-1
-        self.move(move)
-        is_check = self.in_check()
-        self.undomove(move)
+        is_check = self.is_check(move)
         capture = self.is_capture(move)
         #castling
         startingpieces = {1:"K", 2:"", 3:"N", 4:"B", 5:"R", 6:"Q"}
@@ -335,8 +374,26 @@ class Board:
                     alpha=evaluation
         return alpha
 
+    def book(self):
+        #removing from the games database
+        global games
+        if len(games)==0:
+            return False
+        movePNG = random.choice(games)[len(self.all_moves)]
+        print(movePNG)
+        moves = self.possible_moves()
+        for i in moves:
+            if self.PNGformatter(i)==movePNG:
+                return i
+        return False
+
     def choosemove3(self, depth, alpha, beta, ply):
         global bestmove
+        if ply==0:
+            a = self.book()
+            if a:
+                bestmove = a
+                return a
         if depth==0:
             if ply%2==1:
                 return self.quiesce(alpha, beta)
@@ -461,7 +518,7 @@ while game_not_over:
         currentboard.evaluateboard()
         if move in currentboard.legalmoves():
             #print(currentboard.PNGformatter(move))
-            currentboard.move(move)
+            currentboard.move1(move)
             
             move=0
             dis=update_board_graphics(currentboard.board, dis, images)
@@ -473,7 +530,7 @@ while game_not_over:
             out1 = currentboard.choosemove3(1, -10**9, 10**9, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
             #print(currentboard.PNGformatter(bestmove))
-            currentboard.move(bestmove)
+            currentboard.move1(bestmove)
             
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()

@@ -519,7 +519,6 @@ while game_not_over:
         if move in currentboard.legalmoves():
             #print(currentboard.PNGformatter(move))
             currentboard.move1(move)
-            
             move=0
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
@@ -527,11 +526,10 @@ while game_not_over:
             t = time.time()
             bestmove = -1
             #cProfile.run("currentboard.choosemove3(3, -10**8, -10**8, 0)")
-            out1 = currentboard.choosemove3(1, -10**9, 10**9, 0)
+            out1 = currentboard.choosemove3(3, -10**9, 10**9, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
             #print(currentboard.PNGformatter(bestmove))
             currentboard.move1(bestmove)
-            
             dis=update_board_graphics(currentboard.board, dis, images)
             pygame.display.update()
         else:

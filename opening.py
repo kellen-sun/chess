@@ -1,9 +1,31 @@
-with open("Games.txt", "r") as f:
-    games = f.readlines()
+with open("parsinggames.txt", "r") as f:
+    content = f.readlines()
 
-for i in range(len(games)):
-    game = games[i].split()
-    for j in range(len(game)):
-        move = game[j]
-        if "Q" not in move and "R" not in move and "N" not in move and "x" in move and move!="O-O" and move!="O-O-O" and "B" not in move and move!="1-0" and move!="0-1" and move!="1/2-1/2" and "K" not in move:
-            print(move)
+content = content
+games = []
+for i in content:
+    if "[" in i or "]" in i:
+        pass
+    else:
+        games.append(i)
+
+gamess = [[]]
+for i in games:
+    if i=="" and gamess[-1]!=[]:
+        gamess.append([])
+    else:
+        if "1."==i[:2]:
+            gamess.append([])
+            for j in i.split():
+                if "." not in j:
+                    gamess[-1].append(j)
+        else:
+            
+            for j in i.split():
+                if "." not in j:
+                    gamess[-1].append(j)
+
+print(len(gamess))
+with open("parsed.txt", "w") as f:
+    for game in gamess:
+        f.write(" ".join(game)+"\n")

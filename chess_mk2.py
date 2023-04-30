@@ -48,13 +48,10 @@ class Board:
 
     def endgame(self):
         cc1 = 0
-        cc2 = 0
         for x in self.board:
-            if x == Rook+White or x==Knight+White or x==Bishop+White:
+            if x == Rook+White or x==Knight+White or x==Bishop+White or x == Rook+Black or x==Knight+Black or x==Bishop+Black or x==Queen+White or x==Queen+Black:
                 cc1+=1
-            if x == Rook+Black or x==Knight+Black or x==Bishop+Black:
-                cc2+=1
-        return ((Queen+White not in self.board) and (Queen+Black not in self.board)) or (cc1<=1 and cc2<=1)
+        return (cc1<=3)
     
     def move(self, move):
         """Given a move the board is changed accordingly"""
@@ -255,11 +252,6 @@ class Board:
                         eval+=boardevaluation[piece%8][i]
                     else:
                         eval-=boardevaluation[piece%8][63-i]
-            else:
-                if piece//8-1==0:
-                    eval+=boardevaluation['E2'][i]
-                else:
-                    eval-=boardevaluation['E2'][63-i]
         return eval
     
     def PNGformatter(self, move):
@@ -357,22 +349,25 @@ class Board:
             self.undomove(i)
         return bestEvaluation, bestmove
     
-    def quiesce(self, alpha, beta):
+    def quiesce(self, alpha, beta, ply):
         evaluation = self.evaluateboard()
         if evaluation>=beta:
-            return beta
+            return beta, ply
         alpha = max(alpha, evaluation)
         moves = self.legalmoves()
+        capturemoves = []
         for i in moves:
             if self.is_capture(i) or self.is_check(i):
-                self.move(i)
-                evaluation = -self.quiesce(-beta, -alpha)
-                self.undomove(i)
-                if evaluation>=beta:
-                    return beta
-                if evaluation>alpha:
-                    alpha=evaluation
-        return alpha
+                capturemoves.append(i)
+        print(self.turn, capturemoves)
+        for i in capturemoves:
+            self.move(i)
+            evaluation = - self.quiesce(-beta, -alpha, ply+1)[0]
+            self.undomove(i)
+            if evaluation>=beta:
+                return beta, ply
+            alpha = max(evaluation, alpha)
+        return alpha, ply
 
     def book(self):
         #removing from the games database
@@ -395,10 +390,11 @@ class Board:
                 bestmove = a
                 return a
         if depth==0:
-            if ply%2==1:
-                return self.quiesce(alpha, beta)
-            else:
-                return -self.quiesce(alpha, beta)
+            #self.turn = 1-self.turn
+            eval, p = self.quiesce(alpha, beta, ply+1)
+            if p%2==1:
+                eval = -eval
+            return eval
         moves = self.legalmoves()
         if len(moves)==0:
             if self.in_check():
@@ -526,7 +522,7 @@ while game_not_over:
             t = time.time()
             bestmove = -1
             #cProfile.run("currentboard.choosemove3(3, -10**8, -10**8, 0)")
-            out1 = currentboard.choosemove3(3, -10**9, 10**9, 0)
+            out1 = currentboard.choosemove3(1, -10**9, 10**9, 0)
             print(time.time()-t, "s for", totalcount, "moves evaluated.")
             #print(currentboard.PNGformatter(bestmove))
             currentboard.move1(bestmove)

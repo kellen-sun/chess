@@ -309,6 +309,7 @@ class Board:
     def in_check(self):
         self.turn = 1-self.turn
         for i in self.possible_moves():
+        for i in self.possible_moves():
             move1=i%65-1
             if self.board[move1]==8*(self.turn+1)+King:
                 self.turn = 1-self.turn
@@ -369,6 +370,15 @@ class Board:
             alpha = max(evaluation, alpha)
         return alpha, ply
 
+    def quiesce2(self, alpha, beta, ply):
+        capturemoves = []
+        moves = self.legalmoves()
+        for i in moves:
+            if self.is_capture(i) or self.is_check(i):
+                capturemoves.append(i)
+        if len(capturemoves)==0:
+            return alpha
+    
     def book(self):
         #removing from the games database
         global games
@@ -380,6 +390,40 @@ class Board:
         for i in moves:
             if self.PNGformatter(i)==movePNG:
                 return i
+        return False
+    
+    def book2(self):
+        global games
+        if len(self.all_moves)==1:
+            moves = self.possible_moves()
+            movePNG = random.choice(list(games_dict[self.all_movesPNG[0]].keys()))
+            print(movePNG)
+            for i in moves:
+                if self.PNGformatter(i)==movePNG:
+                    return i
+        if len(self.all_moves)==3:
+            movePNG = random.choice(list(games_dict[self.all_movesPNG[0]][self.all_movesPNG[1]][self.all_movesPNG[2]].keys()))
+            moves = self.possible_moves()
+            print(movePNG)
+            for i in moves:
+                if self.PNGformatter(i)==movePNG:
+                    return i
+        else:
+            if len(self.all_moves)==5:
+                games = games_dict[self.all_movesPNG[0]][self.all_movesPNG[1]][self.all_movesPNG[2]][self.all_movesPNG[3]]
+                actualgames = []
+                for i in games:
+                    if self.all_movesPNG[-1]==i[0]:
+                        actualgames.append(i)
+                games = actualgames
+            if len(games)==0:
+                return False
+            movePNG = random.choice(games)[len(self.all_moves)-4]
+            print(movePNG)
+            moves = self.possible_moves()
+            for i in moves:
+                if self.PNGformatter(i)==movePNG:
+                    return i
         return False
 
     def choosemove3(self, depth, alpha, beta, ply):
@@ -419,6 +463,8 @@ class Board:
         return alpha
         
         
+        
+        
 #Starting position
 currentboard = Board([21, 19, 20, 22, 17, 20, 19, 21, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 13, 11, 12, 14, 9, 12, 11, 13], [0, 1, 2, 3], 0, -1, [])
 
@@ -433,6 +479,7 @@ pygame.init()
 pygame.display.set_caption('Chess')
 dis = pygame.display.set_mode((480, 480))
 game_not_over = True
+
 
 
 
@@ -513,6 +560,7 @@ while game_not_over:
         #if there's not a selected square then reset it (make the move then reset)
         currentboard.evaluateboard()
         if move in currentboard.legalmoves():
+            #print(currentboard.PNGformatter(move))
             #print(currentboard.PNGformatter(move))
             currentboard.move1(move)
             move=0

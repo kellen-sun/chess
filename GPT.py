@@ -147,7 +147,7 @@ xb, yb = get_batch('train')
 logits, loss = m(xb, yb)
 print(loss.item())
 print(decode(m.generate(idx = torch.zeros((1,1), dtype = torch.long), max_new_tokens=100)[0].tolist()))
-
+print(sum(p.numel() for p in model.parameters()))
 optimizer = torch.optim.AdamW(m.parameters(), lr = learning_rate)
 
 for steps in range(max_iters):
